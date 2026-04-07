@@ -1,0 +1,64 @@
+# ── Python ──────────────────────────────────────────────────────────────────
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+*.so
+build/
+dist/
+wheels/
+*.egg-info/
+.eggs/
+
+# ── Virtual environments ─────────────────────────────────────────────────────
+.venv/
+venv/
+env/
+ENV/
+
+# ── Django ───────────────────────────────────────────────────────────────────
+*.log
+local_settings.py
+db.sqlite3
+db.sqlite3-shm
+db.sqlite3-wal
+
+# Media files uploaded by users (serve from cloud storage in production)
+media/
+
+# Collected static files
+staticfiles/
+static_root/
+
+# Django secret / environment variables
+.env
+.env.*
+!.env.example
+
+# ── Testing & coverage ───────────────────────────────────────────────────────
+.coverage
+coverage.xml
+htmlcov/
+.pytest_cache/
+.tox/
+nosetests.xml
+
+# ── OS ───────────────────────────────────────────────────────────────────────
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# ── Editors / IDEs ───────────────────────────────────────────────────────────
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# ── Jupyter ──────────────────────────────────────────────────────────────────
+.ipynb_checkpoints/
+
+# ── Type checkers / linters ──────────────────────────────────────────────────
+.mypy_cache/
+.ruff_cache/
+

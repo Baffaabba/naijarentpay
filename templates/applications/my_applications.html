@@ -1,0 +1,43 @@
+{% extends 'base_dashboard.html' %}
+{% block title %}My Applications — 9jaRentPay{% endblock %}
+{% block page_title %}My Applications{% endblock %}
+{% block page_subtitle %}Track your rental applications{% endblock %}
+
+{% block dashboard_content %}
+{% if applications %}
+<div class="space-y-4">
+  {% for app in applications %}
+  <div class="bg-white rounded-2xl p-5 shadow-sm flex items-center gap-5">
+    <img src="{{ app.rental_property.display_image }}" alt="{{ app.rental_property.title }}"
+         class="w-20 h-20 rounded-xl object-cover flex-shrink-0" />
+    <div class="flex-1 min-w-0">
+      <h4 class="font-bold text-gray-900">{{ app.rental_property.title }}</h4>
+      <p class="text-xs text-gray-400 mt-0.5">📍 {{ app.rental_property.location }}, {{ app.rental_property.city }}</p>
+      <p class="text-xs text-gray-400 mt-1">Applied: {{ app.applied_date|date:"d M Y" }}</p>
+      <p class="text-sm font-bold text-primary mt-1">₦{{ app.rental_property.price_per_year|floatformat:0 }}/yr</p>
+    </div>
+    <div class="text-right flex-shrink-0">
+      <span class="text-sm font-semibold px-4 py-2 rounded-xl
+        {% if app.status == 'approved' %}bg-accent/10 text-accent
+        {% elif app.status == 'pending' %}bg-yellow-50 text-yellow-600
+        {% else %}bg-red-50 text-red-500{% endif %}">
+        {% if app.status == 'approved' %}✓ Approved
+        {% elif app.status == 'pending' %}⏳ Pending
+        {% else %}✕ Rejected{% endif %}
+      </span>
+      {% if app.status == 'approved' %}
+        <p class="text-xs text-accent font-medium mt-2">Lease ready</p>
+      {% endif %}
+    </div>
+  </div>
+  {% endfor %}
+</div>
+{% else %}
+<div class="flex flex-col items-center justify-center py-20 text-center">
+  <div class="text-4xl mb-4">🏠</div>
+  <h3 class="text-lg font-bold text-gray-900 mb-2">No Applications Yet</h3>
+  <p class="text-sm text-gray-400 mb-6">Find a property and apply to get started.</p>
+  <a href="{% url 'find_homes' %}" class="bg-primary text-white font-bold px-6 py-3 rounded-2xl text-sm hover:bg-primary/90 transition">Browse Properties</a>
+</div>
+{% endif %}
+{% endblock %}

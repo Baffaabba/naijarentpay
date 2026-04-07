@@ -1,0 +1,36 @@
+{% comment %}Partial: single property card — include as {% include 'partials/property_card.html' with property=prop %}{% endcomment %}
+{% load humanize %}
+<div class="bg-white rounded-2xl shadow-sm overflow-hidden hover:shadow-md transition-shadow">
+  <div class="relative overflow-hidden">
+    <img src="{{ property.display_image }}" alt="{{ property.title }}"
+         class="w-full h-44 object-cover" loading="lazy" />
+    {% if property.is_verified %}
+      <span class="absolute top-3 left-3 bg-accent text-white text-xs font-semibold px-2 py-0.5 rounded-full">Verified</span>
+    {% endif %}
+    {% if property.is_available %}
+      <span class="absolute top-3 right-3 bg-white text-accent text-xs font-semibold px-2 py-0.5 rounded-full shadow">Available</span>
+    {% else %}
+      <span class="absolute top-3 right-3 bg-gray-200 text-gray-500 text-xs font-semibold px-2 py-0.5 rounded-full">Unavailable</span>
+    {% endif %}
+  </div>
+  <div class="p-4">
+    <div class="flex items-start justify-between">
+      <div>
+        <h4 class="font-bold text-gray-900 text-base leading-tight">{{ property.title }}</h4>
+        <p class="text-xs text-gray-400 mt-0.5">📍 {{ property.location }}, {{ property.city }}</p>
+      </div>
+      {% if property.rating %}
+        <span class="text-xs text-yellow-500 font-semibold mt-0.5">★ {{ property.rating }}</span>
+      {% endif %}
+    </div>
+    <div class="flex items-center gap-3 mt-3 text-xs text-gray-500">
+      <span>🛏 {{ property.bedrooms }} beds</span>
+      <span>🚿 {{ property.bathrooms }} baths</span>
+      {% if property.sqft %}<span>📐 {{ property.sqft }} sqft</span>{% endif %}
+    </div>
+    <div class="flex items-center justify-between mt-4">
+      <p class="font-bold text-primary text-base">₦{{ property.price_per_year|intcomma }}<span class="text-gray-400 font-normal text-xs">/yr</span></p>
+      <a href="{% url 'property_detail' property.pk %}" class="bg-primary text-white text-xs font-semibold px-4 py-1.5 rounded-xl hover:bg-primary/90 transition">View</a>
+    </div>
+  </div>
+</div>

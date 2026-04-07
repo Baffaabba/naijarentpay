@@ -1,0 +1,169 @@
+{% extends 'base_dashboard.html' %}
+{% load humanize %}
+{% block title %}Dashboard — 9jaRentPay{% endblock %}
+{% block page_title %}Dashboard{% endblock %}
+{% block page_subtitle %}Welcome back, {{ request.user.first_name }}!{% endblock %}
+
+{% block dashboard_content %}
+<!-- Stats Row -->
+<div class="grid grid-cols-4 gap-6 mb-8">
+  <div class="bg-white rounded-2xl p-6 shadow-sm">
+    <p class="text-sm text-gray-500 mb-1">Wallet Balance</p>
+    <p class="text-2xl font-bold text-gray-900">₦{{ wallet.balance|default:"0"|intcomma }}</p>
+    <p class="text-xs text-accent mt-1 font-medium">● Available</p>
+  </div>
+  <div class="bg-white rounded-2xl p-6 shadow-sm">
+    <p class="text-sm text-gray-500 mb-1">Next Rent Due</p>
+    {% if active_lease %}
+      <p class="text-2xl font-bold text-gray-900">{{ active_lease.next_rent_due|date:"d M Y" }}</p>
+      <p class="text-xs text-warning mt-1 font-medium">● Upcoming</p>
+    {% else %}
+      <p class="text-2xl font-bold text-gray-400">—</p>
+      <p class="text-xs text-gray-400 mt-1">No active lease</p>
+    {% endif %}
+  </div>
+  <div class="bg-white rounded-2xl p-6 shadow-sm">
+    <p class="text-sm text-gray-500 mb-1">Active Lease</p>
+    {% if active_lease %}
+      <p class="text-2xl font-bold text-gray-900">1</p>
+      <p class="text-xs text-accent mt-1 font-medium">● Active</p>
+    {% else %}
+      <p class="text-2xl font-bold text-gray-400">0</p>
+    {% endif %}
+  </div>
+  <div class="bg-white rounded-2xl p-6 shadow-sm">
+    <p class="text-sm text-gray-500 mb-1">Saved This Month</p>
+    {% if savings_goal %}
+      <p class="text-2xl font-bold text-gray-900">₦{{ savings_goal.saved_amount|intcomma }}</p>
+      <p class="text-xs text-accent mt-1 font-medium">● {{ savings_goal.percentage_saved }}% of goal</p>
+    {% else %}
+      <p class="text-2xl font-bold text-gray-400">₦0</p>
+    {% endif %}
+  </div>
+</div>
+
+<div class="grid grid-cols-3 gap-6">
+  <!-- Main left area -->
+  <div class="col-span-2 space-y-6">
+
+    <!-- Savings Goal Progress -->
+    {% if savings_goal %}
+    <div class="bg-white rounded-2xl p-6 shadow-sm">
+      <div class="flex items-center justify-between mb-4">
+        <h3 class="font-bold text-gray-900">Savings Goal</h3>
+        <a href="{% url 'savings_wallet' %}" class="text-sm text-primary font-medium hover:underline">View Wallet →</a>
+      </div>
+      <p class="text-sm text-gray-500 mb-3">{{ savings_goal.goal_name }}</p>
+      <div class="flex items-center gap-4">
+        <!-- Circle progress -->
+        <div class="relative w-20 h-20 flex-shrink-0">
+          <svg class="w-20 h-20 rotate-[-90deg]" viewBox="0 0 80 80">
+            <circle cx="40" cy="40" r="34" fill="none" stroke="#E5E7EB" stroke-width="8"/>
+            <circle cx="40" cy="40" r="34" fill="none" stroke="#10B981" stroke-width="8"
+              stroke-dasharray="213.6"
+              stroke-dashoffset="{% widthratio savings_goal.percentage_saved 100 213.6 %}"/>
+          </svg>
+          <span class="absolute inset-0 flex items-center justify-center text-sm font-bold text-gray-900">
+            {{ savings_goal.percentage_saved }}%
+          </span>
+        </div>
+        <div class="flex-1">
+          <div class="w-full bg-gray-100 rounded-full h-2 mb-2">
+            <div class="bg-accent h-2 rounded-full transition-all progress-bar" data-pct="{{ savings_goal.percentage_saved }}"></div>
+          </div>
+          <div class="flex justify-between text-xs text-gray-500">
+            <span>₦{{ savings_goal.saved_amount|intcomma }} saved</span>
+            <span>₦{{ savings_goal.target_amount|intcomma }} goal</span>
+          </div>
+          <p class="text-xs text-warning mt-1">{{ savings_goal.days_remaining }} days remaining</p>
+        </div>
+      </div>
+    </div>
+    {% endif %}
+
+    <!-- Recent Transactions -->
+    {% if transactions %}
+    <div class="bg-white rounded-2xl p-6 shadow-sm">
+      <h3 class="font-bold text-gray-900 mb-4">Recent Transactions</h3>
+      <div class="space-y-3">
+        {% for t in transactions %}
+          <div class="flex items-center justify-between py-2 border-b border-gray-50 last:border-0">
+            <div class="flex items-center gap-3">
+              <div class="w-9 h-9 rounded-full {% if t.transaction_type == 'credit' %}bg-accent/10 text-accent{% else %}bg-red-50 text-red-500{% endif %} flex items-center justify-center text-sm font-bold">
+                {% if t.transaction_type == 'credit' %}+{% else %}-{% endif %}
+              </div>
+              <div>
+                <p class="text-sm font-medium text-gray-900">{{ t.description }}</p>
+                <p class="text-xs text-gray-400">{{ t.created_at|date:"d M Y, g:i A" }}</p>
+              </div>
+            </div>
+            <span class="font-semibold text-sm {% if t.transaction_type == 'credit' %}text-accent{% else %}text-red-500{% endif %}">
+              {% if t.transaction_type == 'credit' %}+{% else %}-{% endif %}₦{{ t.amount|intcomma }}
+            </span>
+          </div>
+        {% endfor %}
+      </div>
+    </div>
+    {% endif %}
+  </div>
+
+  <!-- Right sidebar -->
+  <div class="space-y-6">
+    <!-- Active Lease -->
+    {% if active_lease %}
+    <div class="bg-white rounded-2xl p-6 shadow-sm">
+      <h3 class="font-bold text-gray-900 mb-4">Current Lease</h3>
+      <div class="bg-gray-50 rounded-xl p-4">
+        <p class="text-sm font-semibold text-gray-900">{{ active_lease.rental_property.title }}</p>
+        <p class="text-xs text-gray-500 mt-1">{{ active_lease.rental_property.location }}</p>
+        <div class="mt-3 flex justify-between text-xs text-gray-400">
+          <span>{{ active_lease.start_date|date:"d M Y" }}</span>
+          <span>→</span>
+          <span>{{ active_lease.end_date|date:"d M Y" }}</span>
+        </div>
+        <p class="mt-3 text-sm font-bold text-primary">₦{{ active_lease.rent_amount|floatformat:0 }}<span class="font-normal text-gray-400">/yr</span></p>
+      </div>
+      <a href="{% url 'my_lease' %}" class="mt-3 block w-full text-center bg-primary text-white py-2 rounded-xl text-sm font-semibold hover:bg-primary/90 transition">View Lease</a>
+    </div>
+    {% endif %}
+
+    <!-- Quick Actions -->
+    <div class="bg-white rounded-2xl p-6 shadow-sm">
+      <h3 class="font-bold text-gray-900 mb-4">Quick Actions</h3>
+      <div class="space-y-2">
+        <a href="{% url 'find_homes' %}" class="flex items-center gap-3 p-3 rounded-xl hover:bg-gray-50 transition text-sm font-medium text-gray-700">
+          🔍 Find New Home
+        </a>
+        <a href="{% url 'savings_wallet' %}" class="flex items-center gap-3 p-3 rounded-xl hover:bg-gray-50 transition text-sm font-medium text-gray-700">
+          💰 Top Up Wallet
+        </a>
+        <a href="{% url 'my_lease' %}" class="flex items-center gap-3 p-3 rounded-xl hover:bg-gray-50 transition text-sm font-medium text-gray-700">
+          📋 View Lease
+        </a>
+        <a href="{% url 'tenant_messages' %}" class="flex items-center gap-3 p-3 rounded-xl hover:bg-gray-50 transition text-sm font-medium text-gray-700">
+          💬 Messages
+        </a>
+      </div>
+    </div>
+
+    <!-- Recommended Properties -->
+    {% if recommended %}
+    <div class="bg-white rounded-2xl p-6 shadow-sm">
+      <h3 class="font-bold text-gray-900 mb-4">Recommended</h3>
+      <div class="space-y-3">
+        {% for prop in recommended %}
+        <a href="{% url 'property_detail' prop.pk %}" class="flex gap-3 hover:bg-gray-50 rounded-xl p-2 transition">
+          <img src="{{ prop.display_image }}" alt="{{ prop.title }}" class="w-14 h-14 rounded-lg object-cover flex-shrink-0" />
+          <div class="min-w-0">
+            <p class="text-sm font-medium text-gray-900 truncate">{{ prop.title }}</p>
+            <p class="text-xs text-gray-400 truncate">{{ prop.location }}</p>
+            <p class="text-xs font-bold text-primary mt-1">₦{{ prop.price_per_year|floatformat:0 }}/yr</p>
+          </div>
+        </a>
+        {% endfor %}
+      </div>
+    </div>
+    {% endif %}
+  </div>
+</div>
+{% endblock %}

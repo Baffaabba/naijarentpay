@@ -1,0 +1,119 @@
+{% comment %}Fund Wallet — Paystack card payment (inline popup). HTMX partial, targets #fund-modal.{% endcomment %}
+<div class="fixed inset-0 bg-black/40 flex items-end sm:items-center justify-center z-50" id="paystack-card-modal">
+  <div class="bg-white w-full sm:max-w-md rounded-t-3xl sm:rounded-3xl p-6 shadow-2xl text-center">
+    <!-- Header -->
+    <div class="flex items-center justify-between mb-5">
+      <h2 class="text-lg font-bold text-gray-900">Fund Wallet</h2>
+      <button onclick="document.getElementById('fund-modal').innerHTML=''" class="text-gray-400 hover:text-gray-600 text-xl leading-none">✕</button>
+    </div>
+
+    <!-- Step indicator -->
+    <div class="flex items-center gap-2 mb-6">
+      <div class="w-7 h-7 rounded-full bg-accent text-white text-xs font-bold flex items-center justify-center">✓</div>
+      <div class="flex-1 h-0.5 bg-accent"></div>
+      <div class="w-7 h-7 rounded-full bg-accent text-white text-xs font-bold flex items-center justify-center">✓</div>
+      <div class="flex-1 h-0.5 bg-primary"></div>
+      <div class="w-7 h-7 rounded-full bg-primary text-white text-xs font-bold flex items-center justify-center">3</div>
+    </div>
+
+    <!-- Paystack logo area -->
+    <div class="w-16 h-16 bg-blue-50 rounded-full flex items-center justify-center mx-auto mb-4">
+      <span class="text-3xl">💳</span>
+    </div>
+
+    <p class="text-sm text-gray-500 mb-1">Paying</p>
+    <p class="text-3xl font-bold text-gray-900 mb-2">₦{{ amount|floatformat:0 }}</p>
+    <p class="text-xs text-gray-400 mb-6">via Paystack · Visa / Mastercard / Verve</p>
+
+    <!-- Status message -->
+    <div id="paystack-status" class="hidden mb-4 p-3 rounded-xl text-sm"></div>
+
+    <button id="paystack-pay-btn"
+      onclick="launchPaystack()"
+      class="w-full bg-[#0ba4db] text-white font-bold py-3 rounded-2xl text-sm hover:opacity-90 transition">
+      Pay with Paystack →
+    </button>
+    <button onclick="document.getElementById('fund-modal').innerHTML=''" class="mt-3 text-sm text-gray-400 hover:text-gray-600 w-full">
+      Cancel
+    </button>
+  </div>
+</div>
+
+<script src="https://js.paystack.co/v1/inline.js"></script>
+<script>
+function launchPaystack() {
+  const btn = document.getElementById('paystack-pay-btn');
+  btn.disabled = true;
+  btn.textContent = 'Opening…';
+
+  const handler = PaystackPop.setup({
+    key: '{{ paystack_public_key }}',
+    email: '{{ user_email }}',
+    amount: {{ amount_kobo }},
+    ref: '{{ reference }}',
+    currency: 'NGN',
+    label: 'NaijaRentPay Wallet',
+    onClose: function() {
+      btn.disabled = false;
+      btn.textContent = 'Pay with Paystack →';
+    },
+    callback: function(response) {
+      btn.textContent = 'Verifying…';
+      const st = document.getElementById('paystack-status');
+      const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]');
+
+      const formData = new FormData();
+      formData.append('reference', response.reference);
+      if (csrfToken) formData.append('csrfmiddlewaretoken', csrfToken.value);
+      else {
+        // Grab from cookie
+        const m = document.cookie.match(/csrftoken=([^;]+)/);
+        if (m) formData.append('csrfmiddlewaretoken', m[1]);
+      }
+
+      fetch('{% url "paystack_verify" %}', {
+        method: 'POST',
+        body: formData,
+        headers: {'X-Requested-With': 'XMLHttpRequest'},
+      })
+      .then(r => r.json())
+      .then(data => {
+        if (data.ok) {
+          document.getElementById('fund-modal').innerHTML = successHtml(data.balance);
+        } else {
+          st.className = 'mb-4 p-3 rounded-xl text-sm bg-red-50 text-red-700';
+          st.textContent = data.error || 'Verification failed. Contact support.';
+          btn.disabled = false;
+          btn.textContent = 'Try Again';
+        }
+      })
+      .catch(() => {
+        st.className = 'mb-4 p-3 rounded-xl text-sm bg-red-50 text-red-700';
+        st.textContent = 'Network error. Your payment may still be pending.';
+        btn.disabled = false;
+        btn.textContent = 'Try Again';
+      });
+    }
+  });
+  handler.openIframe();
+}
+
+function successHtml(balance) {
+  return `<div class="fixed inset-0 bg-black/40 flex items-end sm:items-center justify-center z-50">
+  <div class="bg-white w-full sm:max-w-md rounded-t-3xl sm:rounded-3xl p-8 shadow-2xl text-center">
+    <div class="w-20 h-20 bg-green-50 rounded-full flex items-center justify-center mx-auto mb-5">
+      <svg class="w-10 h-10 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
+      </svg>
+    </div>
+    <h2 class="text-2xl font-bold text-gray-900 mb-1">Wallet Funded!</h2>
+    <p class="text-sm text-gray-400 mb-4">Payment verified successfully</p>
+    <div class="bg-green-50 rounded-2xl py-4 px-6 mb-6">
+      <p class="text-xs text-gray-400 mb-1">New Wallet Balance</p>
+      <p class="text-3xl font-bold text-green-600">₦${parseFloat(balance).toLocaleString('en-NG', {minimumFractionDigits: 2})}</p>
+    </div>
+    <button onclick="location.reload()" class="w-full bg-primary text-white font-bold py-3 rounded-2xl text-sm hover:bg-primary/90 transition">Done</button>
+  </div>
+</div>`;
+}
+</script>

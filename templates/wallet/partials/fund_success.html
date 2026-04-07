@@ -1,0 +1,32 @@
+{% comment %}Fund Wallet — Success screen.{% endcomment %}
+<div class="fixed inset-0 bg-black/40 flex items-end sm:items-center justify-center z-50">
+  <div class="bg-white w-full sm:max-w-md rounded-t-3xl sm:rounded-3xl p-8 shadow-2xl text-center">
+    <!-- Success animation -->
+    <div class="w-20 h-20 bg-accent/10 rounded-full flex items-center justify-center mx-auto mb-5">
+      <svg class="w-10 h-10 text-accent success-pop" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
+      </svg>
+    </div>
+
+    <h2 class="text-2xl font-bold text-gray-900 mb-1">Wallet Funded!</h2>
+    <p class="text-sm text-gray-400 mb-4">Your wallet has been credited successfully</p>
+
+    <div class="bg-accent/5 rounded-2xl py-4 px-6 mb-6">
+      <p class="text-xs text-gray-400 mb-1">New Wallet Balance</p>
+      <p class="text-3xl font-bold text-accent">₦{{ wallet.balance|floatformat:0 }}</p>
+    </div>
+
+    <div class="flex flex-col gap-3">
+      <a href="{% url 'savings_wallet' %}"
+        onclick="document.getElementById('fund-modal').innerHTML=''"
+        class="w-full bg-primary text-white font-bold py-3 rounded-2xl text-sm hover:bg-primary/90 transition">
+        Move to Savings Goal →
+      </a>
+      <button onclick="document.getElementById('fund-modal').innerHTML=''"
+        class="text-sm text-gray-400 hover:text-gray-600">
+        Close
+      </button>
+    </div>
+  </div>
+</div>
+

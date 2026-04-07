@@ -1,0 +1,57 @@
+{% extends 'base_dashboard.html' %}
+{% block title %}Notifications — 9jaRentPay{% endblock %}
+{% block page_title %}Notifications{% endblock %}
+{% block page_subtitle %}All your alerts in one place{% endblock %}
+
+{% block dashboard_content %}
+<div class="max-w-2xl">
+  <div class="bg-white rounded-2xl shadow-sm overflow-hidden">
+    <div class="px-6 py-4 border-b border-gray-100 flex items-center justify-between">
+      <span class="text-sm font-semibold text-gray-700">{{ notifications|length }} notification{{ notifications|length|pluralize }}</span>
+      {% if notifications %}
+      <form method="post" action="{% url 'notifications_mark_all_read' %}">
+        {% csrf_token %}
+        <button type="submit" class="text-xs text-primary hover:underline font-medium">Mark all as read</button>
+      </form>
+      {% endif %}
+    </div>
+    {% for n in notifications %}
+    <div class="px-6 py-4 border-b border-gray-50 last:border-0 flex gap-4 items-start {% if not n.is_read %}bg-primary/[0.03]{% endif %}">
+      <div class="w-9 h-9 rounded-full flex items-center justify-center flex-shrink-0 text-lg
+        {% if n.notification_type == 'application_received' %}bg-yellow-50
+        {% elif n.notification_type == 'application_approved' %}bg-accent/10
+        {% elif n.notification_type == 'application_rejected' %}bg-red-50
+        {% elif n.notification_type == 'message_received' %}bg-blue-50
+        {% elif n.notification_type == 'payment_confirmed' %}bg-emerald-50
+        {% elif n.notification_type == 'lease_created' %}bg-purple-50
+        {% else %}bg-gray-100{% endif %}">
+        {% if n.notification_type == 'application_received' %}📋
+        {% elif n.notification_type == 'application_approved' %}✅
+        {% elif n.notification_type == 'application_rejected' %}❌
+        {% elif n.notification_type == 'message_received' %}💬
+        {% elif n.notification_type == 'payment_confirmed' %}💰
+        {% elif n.notification_type == 'lease_created' %}📄
+        {% elif n.notification_type == 'rent_due' %}⏰
+        {% else %}🔔{% endif %}
+      </div>
+      <div class="flex-1 min-w-0">
+        <p class="text-sm font-semibold text-gray-900 {% if not n.is_read %}text-primary{% endif %}">{{ n.title }}</p>
+        {% if n.body %}<p class="text-xs text-gray-500 mt-0.5">{{ n.body }}</p>{% endif %}
+        <p class="text-xs text-gray-400 mt-1">{{ n.created_at|timesince }} ago</p>
+      </div>
+      {% if not n.is_read %}
+        <span class="w-2 h-2 bg-primary rounded-full mt-2 flex-shrink-0"></span>
+      {% endif %}
+      {% if n.link %}
+        <a href="{{ n.link }}" class="text-xs text-primary font-medium hover:underline flex-shrink-0 mt-1">View →</a>
+      {% endif %}
+    </div>
+    {% empty %}
+    <div class="px-6 py-16 text-center">
+      <p class="text-4xl mb-3">🔔</p>
+      <p class="text-sm text-gray-500">No notifications yet</p>
+    </div>
+    {% endfor %}
+  </div>
+</div>
+{% endblock %}

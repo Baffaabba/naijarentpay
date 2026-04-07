@@ -1,0 +1,68 @@
+{% comment %}Fund Wallet — Step 1: Choose amount. HTMX partial, targets #fund-modal.{% endcomment %}
+<div class="fixed inset-0 bg-black/40 flex items-end sm:items-center justify-center z-50" id="fund-modal-overlay">
+  <div class="bg-white w-full sm:max-w-md rounded-t-3xl sm:rounded-3xl p-6 shadow-2xl">
+    <!-- Header -->
+    <div class="flex items-center justify-between mb-5">
+      <h2 class="text-lg font-bold text-gray-900">Fund Wallet</h2>
+      <button onclick="document.getElementById('fund-modal').innerHTML=''" class="text-gray-400 hover:text-gray-600 text-xl leading-none">✕</button>
+    </div>
+
+    <!-- Step indicator -->
+    <div class="flex items-center gap-2 mb-6">
+      <div class="w-7 h-7 rounded-full bg-primary text-white text-xs font-bold flex items-center justify-center">1</div>
+      <div class="flex-1 h-0.5 bg-gray-200"></div>
+      <div class="w-7 h-7 rounded-full bg-gray-200 text-gray-400 text-xs font-bold flex items-center justify-center">2</div>
+      <div class="flex-1 h-0.5 bg-gray-200"></div>
+      <div class="w-7 h-7 rounded-full bg-gray-200 text-gray-400 text-xs font-bold flex items-center justify-center">3</div>
+    </div>
+
+    <!-- Quick amount grid -->
+    <p class="text-sm font-medium text-gray-700 mb-3">Select amount</p>
+    <div class="grid grid-cols-3 gap-2 mb-4" id="quick-amounts">
+      {% for val in quick_amounts %}
+      <button type="button"
+        onclick="setAmount({{ val }})"
+        class="quick-amount bg-gray-50 border border-gray-100 rounded-xl py-2.5 text-sm font-semibold text-gray-700 hover:bg-primary hover:text-white hover:border-primary transition">
+        ₦{{ val }}
+      </button>
+      {% endfor %}
+    </div>
+
+    <!-- Custom amount -->
+    <div class="mb-2">
+      <label class="text-xs text-gray-400 mb-1 block">Or enter custom amount</label>
+      <input type="number" id="fund-amount" name="amount" min="100" placeholder="₦ Enter amount"
+        class="w-full border border-gray-200 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-primary/30"
+        oninput="updateFee()" />
+    </div>
+
+    <!-- Fee display -->
+    <p class="text-xs text-gray-400 mb-4" id="fee-display">Processing fee: —</p>
+
+    <!-- Continue -->
+    <button
+      id="step1-continue"
+      hx-post="{% url 'fund_step2' %}"
+      hx-target="#fund-modal"
+      hx-swap="innerHTML"
+      hx-include="#fund-amount"
+      class="w-full bg-primary text-white font-bold py-3 rounded-2xl text-sm hover:bg-primary/90 transition">
+      Continue →
+    </button>
+  </div>
+</div>
+
+<script>
+function setAmount(val) {
+  document.getElementById('fund-amount').value = val;
+  updateFee();
+  document.querySelectorAll('.quick-amount').forEach(b => b.classList.remove('bg-primary','text-white','border-primary'));
+}
+function updateFee() {
+  const amt = parseFloat(document.getElementById('fund-amount').value) || 0;
+  const fee = (amt * 0.005).toFixed(2);
+  document.getElementById('fee-display').textContent = amt > 0
+    ? `Processing fee: ₦${fee} (0.5%)`
+    : 'Processing fee: —';
+}
+</script>

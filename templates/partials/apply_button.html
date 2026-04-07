@@ -1,0 +1,23 @@
+{% comment %}Partial: apply button — HTMX swap target on property detail.
+Use: <div id="apply-btn">{% include 'partials/apply_button.html' %}</div>{% endcomment %}
+{% if has_lease %}
+  <div class="flex items-center gap-2 bg-primary/10 text-primary font-semibold px-6 py-3 rounded-2xl text-sm">
+    🏠 You are a tenant here
+  </div>
+{% elif applied %}
+  <div class="flex items-center gap-2 bg-accent/10 text-accent font-semibold px-6 py-3 rounded-2xl text-sm">
+    ✓ Application Submitted
+  </div>
+{% elif not available %}
+  <div class="flex items-center gap-2 bg-gray-100 text-gray-500 font-semibold px-6 py-3 rounded-2xl text-sm cursor-not-allowed">
+    Not Available
+  </div>
+{% else %}
+  <button
+    hx-post="{% url 'apply_to_property' property.pk %}"
+    hx-target="#apply-btn"
+    hx-swap="innerHTML"
+    class="w-full bg-primary text-white font-semibold px-6 py-3 rounded-2xl text-sm hover:bg-primary/90 transition shadow-sm">
+    Apply Now
+  </button>
+{% endif %}

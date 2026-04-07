@@ -1,0 +1,18 @@
+{% comment %}Partial: HTMX swap target for property search results.
+Returned by find_homes view when request.htmx is True.{% endcomment %}
+{% if properties %}
+  <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+    {% for prop in properties %}
+      {% include 'partials/property_card.html' with property=prop %}
+    {% endfor %}
+  </div>
+{% else %}
+  <div class="flex flex-col items-center justify-center py-20 text-gray-400">
+    <svg class="w-12 h-12 mb-4 opacity-40" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"
+        d="M3 10l9-7 9 7v10a1 1 0 01-1 1H4a1 1 0 01-1-1V10z"/>
+    </svg>
+    <p class="text-base font-medium">No properties found</p>
+    <p class="text-sm mt-1">Try adjusting your filters</p>
+  </div>
+{% endif %}

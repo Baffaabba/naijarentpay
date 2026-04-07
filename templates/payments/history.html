@@ -1,0 +1,54 @@
+{% extends 'base_dashboard.html' %}
+{% load humanize %}
+{% block title %}Payment History — 9jaRentPay{% endblock %}
+{% block page_title %}Payment History{% endblock %}
+{% block page_subtitle %}Your rent payment records{% endblock %}
+
+{% block dashboard_content %}
+<div class="bg-white rounded-2xl p-6 shadow-sm">
+  {% if payments %}
+  <div class="overflow-x-auto">
+    <table class="w-full text-sm">
+      <thead>
+        <tr class="text-xs text-gray-400 border-b border-gray-100">
+          <th class="pb-3 text-left font-medium">#</th>
+          <th class="pb-3 text-left font-medium">Property</th>
+          <th class="pb-3 text-left font-medium">Amount</th>
+          <th class="pb-3 text-left font-medium">Date</th>
+          <th class="pb-3 text-left font-medium">Status</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for p in payments %}
+        <tr class="border-b border-gray-50 last:border-0 hover:bg-gray-50 transition">
+          <td class="py-3 text-gray-400">{{ forloop.counter }}</td>
+          <td class="py-3">
+            <p class="font-medium text-gray-900">{{ p.rental_property.title }}</p>
+            <p class="text-xs text-gray-400">{{ p.rental_property.city }}</p>
+          </td>
+          <td class="py-3 font-bold text-gray-900">₦{{ p.amount|intcomma }}</td>
+          <td class="py-3 text-gray-400 text-xs">{{ p.date|date:"d M Y" }}</td>
+          <td class="py-3">
+            <span class="text-xs font-semibold px-3 py-1 rounded-full
+              {% if p.status == 'paid' %}bg-accent/10 text-accent
+              {% elif p.status == 'pending' %}bg-yellow-50 text-yellow-600
+              {% else %}bg-red-50 text-red-500{% endif %}">
+              {% if p.status == 'paid' %}✓ Paid
+              {% elif p.status == 'pending' %}⏳ Pending
+              {% else %}✕ Failed{% endif %}
+            </span>
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  {% else %}
+  <div class="flex flex-col items-center justify-center py-16 text-center">
+    <div class="text-4xl mb-4">💸</div>
+    <h3 class="text-lg font-bold text-gray-900 mb-2">No Payments Yet</h3>
+    <p class="text-sm text-gray-400">Your rent payment records will appear here.</p>
+  </div>
+  {% endif %}
+</div>
+{% endblock %}

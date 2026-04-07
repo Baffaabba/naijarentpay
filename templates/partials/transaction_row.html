@@ -1,0 +1,20 @@
+{% comment %}Partial: single transaction table row.
+Use: {% include 'partials/transaction_row.html' with t=transaction %}{% endcomment %}
+<tr class="border-b border-gray-50 last:border-0 hover:bg-gray-50 transition">
+  <td class="py-3 pr-4">
+    <div class="flex items-center gap-3">
+      <div class="w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold
+        {% if t.transaction_type == 'credit' %}bg-accent/10 text-accent{% else %}bg-red-50 text-red-500{% endif %}">
+        {% if t.transaction_type == 'credit' %}↑{% else %}↓{% endif %}
+      </div>
+      <div>
+        <p class="text-sm font-medium text-gray-900">{{ t.description }}</p>
+        <p class="text-xs text-gray-400">{{ t.created_at|date:"d M Y" }}</p>
+      </div>
+    </div>
+  </td>
+  <td class="py-3 text-right font-semibold text-sm
+    {% if t.transaction_type == 'credit' %}text-accent{% else %}text-red-500{% endif %}">
+    {% if t.transaction_type == 'credit' %}+{% else %}-{% endif %}₦{{ t.amount|floatformat:0 }}
+  </td>
+</tr>

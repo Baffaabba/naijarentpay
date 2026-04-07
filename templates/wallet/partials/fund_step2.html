@@ -1,0 +1,125 @@
+{% comment %}Fund Wallet — Step 2: Choose payment method + gateway. HTMX partial, targets #fund-modal.{% endcomment %}
+<div class="fixed inset-0 bg-black/40 flex items-end sm:items-center justify-center z-50">
+  <div class="bg-white w-full sm:max-w-md rounded-t-3xl sm:rounded-3xl p-6 shadow-2xl overflow-y-auto max-h-[90vh]">
+    <!-- Header -->
+    <div class="flex items-center justify-between mb-5">
+      <h2 class="text-lg font-bold text-gray-900">Fund Wallet</h2>
+      <button onclick="document.getElementById('fund-modal').innerHTML=''" class="text-gray-400 hover:text-gray-600 text-xl leading-none">✕</button>
+    </div>
+
+    <!-- Step indicator -->
+    <div class="flex items-center gap-2 mb-6">
+      <div class="w-7 h-7 rounded-full bg-accent text-white text-xs font-bold flex items-center justify-center">✓</div>
+      <div class="flex-1 h-0.5 bg-primary"></div>
+      <div class="w-7 h-7 rounded-full bg-primary text-white text-xs font-bold flex items-center justify-center">2</div>
+      <div class="flex-1 h-0.5 bg-gray-200"></div>
+      <div class="w-7 h-7 rounded-full bg-gray-200 text-gray-400 text-xs font-bold flex items-center justify-center">3</div>
+    </div>
+
+    <p class="text-sm text-gray-500 mb-1">Funding amount</p>
+    <p class="text-2xl font-bold text-gray-900 mb-5">₦{{ amount|floatformat:0 }}</p>
+
+    <!-- Hidden amount -->
+    <input type="hidden" name="amount" value="{{ amount }}" id="carry-amount" />
+
+    <!-- Method options with gateway per card -->
+    <p class="text-sm font-medium text-gray-700 mb-3">Select payment method</p>
+    <div class="space-y-3" id="method-group">
+
+      <!-- Paystack Card -->
+      <label class="flex items-center justify-between p-4 rounded-2xl border border-gray-200 hover:border-primary cursor-pointer transition has-[:checked]:border-primary has-[:checked]:bg-primary/5">
+        <div class="flex items-center gap-3">
+          <div class="w-9 h-9 bg-blue-50 rounded-xl flex items-center justify-center text-lg">💳</div>
+          <div>
+            <p class="text-sm font-semibold text-gray-900">Card (Paystack)</p>
+            <p class="text-xs text-gray-400">Visa · Mastercard · Verve</p>
+          </div>
+        </div>
+        <input type="radio" name="method" value="card" data-gateway="paystack" class="method-radio text-primary" />
+      </label>
+
+      <!-- Flutterwave Card -->
+      <label class="flex items-center justify-between p-4 rounded-2xl border border-gray-200 hover:border-primary cursor-pointer transition has-[:checked]:border-primary has-[:checked]:bg-primary/5">
+        <div class="flex items-center gap-3">
+          <div class="w-9 h-9 bg-orange-50 rounded-xl flex items-center justify-center text-lg">🦋</div>
+          <div>
+            <p class="text-sm font-semibold text-gray-900">Card (Flutterwave)</p>
+            <p class="text-xs text-gray-400">Visa · Mastercard · Verve</p>
+          </div>
+        </div>
+        <input type="radio" name="method" value="card" data-gateway="flutterwave" class="method-radio text-primary" />
+      </label>
+
+      <!-- Bank Transfer -->
+      <label class="flex items-center justify-between p-4 rounded-2xl border border-primary bg-primary/5 cursor-pointer transition">
+        <div class="flex items-center gap-3">
+          <div class="w-9 h-9 bg-green-50 rounded-xl flex items-center justify-center text-lg">🏦</div>
+          <div>
+            <p class="text-sm font-semibold text-gray-900">Bank Transfer
+              <span class="ml-2 bg-accent text-white text-xs px-2 py-0.5 rounded-full">Popular</span>
+            </p>
+            <p class="text-xs text-gray-400">Direct bank transfer (Paystack)</p>
+          </div>
+        </div>
+        <input type="radio" name="method" value="bank_transfer" data-gateway="paystack" checked class="method-radio text-primary" />
+      </label>
+
+      <!-- USSD -->
+      <label class="flex items-center justify-between p-4 rounded-2xl border border-gray-200 hover:border-primary cursor-pointer transition has-[:checked]:border-primary has-[:checked]:bg-primary/5">
+        <div class="flex items-center gap-3">
+          <div class="w-9 h-9 bg-purple-50 rounded-xl flex items-center justify-center text-lg">📱</div>
+          <div>
+            <p class="text-sm font-semibold text-gray-900">USSD</p>
+            <p class="text-xs text-gray-400">Dial code on your phone</p>
+          </div>
+        </div>
+        <input type="radio" name="method" value="ussd" data-gateway="paystack" class="method-radio text-primary" />
+      </label>
+    </div>
+
+    <!-- USSD bank selector (hidden by default) -->
+    <div id="ussd-bank-wrap" class="mt-3 hidden">
+      <label class="text-xs font-medium text-gray-600 mb-1 block">Select your bank</label>
+      <select name="ussd_bank" title="Select your bank" aria-label="Select your bank" class="w-full border border-gray-200 rounded-xl px-3 py-2 text-sm">
+        <option value="057">Zenith Bank — *966#</option>
+        <option value="011">First Bank — *894#</option>
+        <option value="044">Access Bank — *901#</option>
+        <option value="058">GTBank — *737#</option>
+        <option value="033">UBA — *919#</option>
+        <option value="214">FCMB — *329#</option>
+        <option value="215">Unity Bank — *7799#</option>
+        <option value="070">Fidelity Bank — *770#</option>
+      </select>
+    </div>
+
+    <!-- Hidden gateway field -->
+    <input type="hidden" name="gateway" id="gateway-field" value="paystack" />
+
+    <button id="step3-btn"
+      hx-post="{% url 'fund_step3' %}"
+      hx-target="#fund-modal"
+      hx-swap="innerHTML"
+      hx-include="[name='amount'],[name='method'],[name='gateway'],[name='ussd_bank']"
+      class="mt-5 w-full bg-primary text-white font-bold py-3 rounded-2xl text-sm hover:bg-primary/90 transition">
+      Continue →
+    </button>
+  </div>
+</div>
+
+<script>
+(function() {
+  const radios = document.querySelectorAll('.method-radio');
+  const gatewayField = document.getElementById('gateway-field');
+  const ussdWrap = document.getElementById('ussd-bank-wrap');
+
+  function update() {
+    const checked = document.querySelector('.method-radio:checked');
+    if (!checked) return;
+    gatewayField.value = checked.dataset.gateway || 'paystack';
+    ussdWrap.classList.toggle('hidden', checked.value !== 'ussd');
+  }
+
+  radios.forEach(r => r.addEventListener('change', update));
+  update();
+})();
+</script>

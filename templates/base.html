@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>{% block title %}9jaRentPay{% endblock %}</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            primary: '#1B2F4E',
+            accent: '#10B981',
+            warning: '#F59E0B',
+          },
+          fontFamily: {
+            sans: ['"Plus Jakarta Sans"', 'sans-serif'],
+          },
+        }
+      }
+    }
+  </script>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+  <script src="https://unpkg.com/htmx.org@1.9.12"></script>
+  <script defer src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js"></script>
+  <style>
+    :root {
+      --color-primary: #1B2F4E;
+      --color-accent: #10B981;
+      --color-warning: #F59E0B;
+      --color-bg: #F3F4F6;
+    }
+    body { font-family: 'Plus Jakarta Sans', sans-serif; background: var(--color-bg); }
+    .htmx-indicator { display: none; }
+    .htmx-request .htmx-indicator { display: inline-block; }
+    .htmx-request.htmx-indicator { display: inline-block; }
+    .chat-panel { height: calc(100vh - 220px); min-height: 500px; }
+    .lease-progress { width: 60%; }
+    .success-pop { animation: pop 0.4s ease; }
+    @keyframes pop {
+      0% { transform: scale(0); opacity: 0; }
+      60% { transform: scale(1.2); }
+      100% { transform: scale(1); opacity: 1; }
+    }
+  </style>
+  {% block extra_head %}{% endblock %}
+</head>
+<body class="bg-gray-100 text-gray-900">
+  {% if messages %}
+    <div class="fixed top-4 right-4 z-50 space-y-2">
+      {% for message in messages %}
+        <div class="px-4 py-3 rounded-lg shadow-lg text-white text-sm font-medium
+          {% if message.tags == 'success' %}bg-accent{% elif message.tags == 'error' %}bg-red-500{% else %}bg-primary{% endif %}">
+          {{ message }}
+        </div>
+      {% endfor %}
+    </div>
+  {% endif %}
+
+  {% block content %}{% endblock %}
+
+  {% block extra_scripts %}{% endblock %}
+  <script>
+    // Inject CSRF token into every HTMX request
+    document.addEventListener('htmx:configRequest', function(e) {
+      const m = document.cookie.match(/csrftoken=([^;]+)/);
+      if (m) e.detail.headers['X-CSRFToken'] = m[1];
+    });
+    // Set dynamic progress bar widths from data-pct attribute
+    document.querySelectorAll('.progress-bar[data-pct]').forEach(el => {
+      el.style.width = el.dataset.pct + '%';
+    });
+  </script>
+</body>
+</html>

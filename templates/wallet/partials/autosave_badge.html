@@ -1,0 +1,6 @@
+{% comment %}Partial: autosave status badge.{% endcomment %}
+{% if savings_goal.auto_save %}
+  <p class="text-xs text-accent font-medium mt-2">✓ Auto-Save is on</p>
+{% else %}
+  <p class="text-xs text-gray-400 mt-2">Auto-Save is off</p>
+{% endif %}

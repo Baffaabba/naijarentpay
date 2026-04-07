@@ -1,0 +1,115 @@
+{% extends 'base_dashboard.html' %}
+{% block title %}Messages — 9jaRentPay{% endblock %}
+{% block page_title %}Messages{% endblock %}
+{% block page_subtitle %}Your conversations{% endblock %}
+
+{% block dashboard_content %}
+<div class="bg-white rounded-2xl shadow-sm overflow-hidden chat-panel">
+  <div class="flex h-full">
+
+    <!-- Conversations sidebar -->
+    <div class="w-80 border-r border-gray-100 flex flex-col flex-shrink-0">
+      <div class="p-4 border-b border-gray-100">
+        <input type="text" placeholder="Search conversations..."
+          class="w-full border border-gray-200 rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary/30" />
+      </div>
+      <div class="overflow-y-auto flex-1">
+        {% if conversations %}
+          {% for conv in conversations %}
+          <a href="?conv={{ conv.pk }}"
+             class="flex items-center gap-3 px-4 py-3 hover:bg-gray-50 transition border-b border-gray-50 last:border-0
+                    {% if active_conv and active_conv.pk == conv.pk %}bg-primary/5 border-l-2 border-l-primary{% endif %}">
+            <div class="w-10 h-10 rounded-full bg-primary text-white flex items-center justify-center font-bold text-sm flex-shrink-0">
+              {% if request.user.is_tenant %}{{ conv.landlord.initials }}{% else %}{{ conv.tenant.initials }}{% endif %}
+            </div>
+            <div class="flex-1 min-w-0">
+              <div class="flex justify-between items-baseline">
+                <p class="text-sm font-semibold text-gray-900 truncate">
+                  {% if request.user.is_tenant %}{{ conv.landlord.get_full_name }}{% else %}{{ conv.tenant.get_full_name }}{% endif %}
+                </p>
+                {% with last_msg=conv.message_set.last %}
+                  {% if last_msg %}
+                    <span class="text-xs text-gray-400 flex-shrink-0 ml-1">{{ last_msg.sent_at|date:"g:i A" }}</span>
+                  {% endif %}
+                {% endwith %}
+              </div>
+              <p class="text-xs text-gray-400 truncate">{{ conv.rental_property.title }}</p>
+              {% if conv.unread_count > 0 %}
+                <span class="inline-block mt-0.5 bg-primary text-white text-xs rounded-full px-1.5 font-bold">{{ conv.unread_count }}</span>
+              {% endif %}
+            </div>
+          </a>
+          {% endfor %}
+        {% else %}
+          <div class="flex flex-col items-center justify-center h-40 text-gray-400 text-sm px-4 text-center">
+            <p>No conversations yet.</p>
+          </div>
+        {% endif %}
+      </div>
+    </div>
+
+    <!-- Chat area -->
+    <div class="flex flex-col flex-1 min-w-0">
+      {% if active_conv %}
+        <!-- Chat header -->
+        <div class="flex items-center gap-3 px-5 py-4 border-b border-gray-100 flex-shrink-0">
+          <div class="w-9 h-9 rounded-full bg-primary text-white flex items-center justify-center font-bold text-sm flex-shrink-0">
+            {% if request.user.is_tenant %}{{ active_conv.landlord.initials }}{% else %}{{ active_conv.tenant.initials }}{% endif %}
+          </div>
+          <div>
+            <p class="font-bold text-gray-900 text-sm">
+              {% if request.user.is_tenant %}{{ active_conv.landlord.get_full_name }}{% else %}{{ active_conv.tenant.get_full_name }}{% endif %}
+            </p>
+            <p class="text-xs text-gray-400">{{ active_conv.rental_property.title }}</p>
+          </div>
+        </div>
+
+        <!-- Messages -->
+        <div class="flex-1 overflow-y-auto px-5 py-4" id="chat-messages">
+          {% for message in chat_messages %}
+            {% include 'partials/message_bubble.html' %}
+          {% empty %}
+            <div class="flex items-center justify-center h-full text-gray-400 text-sm">
+              No messages yet. Start the conversation!
+            </div>
+          {% endfor %}
+        </div>
+
+        <!-- Message input -->
+        <div class="px-4 py-3 border-t border-gray-100 flex-shrink-0">
+          <form
+            hx-post="{% url 'send_message' active_conv.pk %}"
+            hx-target="#chat-messages"
+            hx-swap="beforeend"
+            hx-on::after-request="this.reset(); document.getElementById('chat-messages').scrollTop = document.getElementById('chat-messages').scrollHeight"
+            class="flex items-end gap-2">
+            {% csrf_token %}
+            <textarea name="content" rows="1" placeholder="Type a message..."
+              class="flex-1 border border-gray-200 rounded-2xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-primary/30 resize-none"
+              onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();this.form.requestSubmit();}"></textarea>
+            <button type="submit" aria-label="Send message" class="bg-primary text-white w-10 h-10 rounded-2xl flex items-center justify-center hover:bg-primary/90 transition flex-shrink-0">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 12h14M12 5l7 7-7 7"/>
+              </svg>
+            </button>
+          </form>
+        </div>
+      {% else %}
+        <!-- Empty state -->
+        <div class="flex-1 flex flex-col items-center justify-center text-gray-400">
+          <div class="text-5xl mb-4">💬</div>
+          <p class="text-base font-medium text-gray-600">Select a conversation</p>
+          <p class="text-sm mt-1">Choose from the list on the left to start chatting</p>
+        </div>
+      {% endif %}
+    </div>
+
+  </div>
+</div>
+
+<script>
+// Auto-scroll to bottom on load
+const msgs = document.getElementById('chat-messages');
+if (msgs) msgs.scrollTop = msgs.scrollHeight;
+</script>
+{% endblock %}

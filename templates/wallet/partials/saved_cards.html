@@ -1,0 +1,31 @@
+{# Partial: list of saved cards — swapped by save_card and delete_card views #}
+{% load humanize %}
+<div id="saved-cards-list">
+  {% if cards %}
+    <div class="space-y-3">
+      {% for card in cards %}
+      <div class="flex items-center justify-between bg-gradient-to-r from-primary to-primary/80 rounded-2xl px-5 py-4 text-white max-w-sm">
+        <div>
+          <p class="text-xs opacity-60 mb-0.5">{{ card.get_card_type_display }} &bull; {{ card.bank }}</p>
+          <p class="font-bold tracking-widest text-base">&bull;&bull;&bull;&bull; &bull;&bull;&bull;&bull; &bull;&bull;&bull;&bull; {{ card.last4 }}</p>
+          <p class="text-xs opacity-70 mt-1">Expires {{ card.exp_month }} / {{ card.exp_year }}</p>
+        </div>
+        <button
+          hx-post="{% url 'delete_card' card.pk %}"
+          hx-target="#saved-cards-list"
+          hx-swap="outerHTML"
+          hx-confirm="Remove this card?"
+          class="text-white/60 hover:text-red-300 transition ml-4"
+          aria-label="Remove card">
+          <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+              d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
+          </svg>
+        </button>
+      </div>
+      {% endfor %}
+    </div>
+  {% else %}
+    <p class="text-sm text-gray-400">No saved cards yet.</p>
+  {% endif %}
+</div>

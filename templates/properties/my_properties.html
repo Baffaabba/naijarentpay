@@ -1,0 +1,54 @@
+{% extends 'base_dashboard.html' %}
+{% block title %}My Properties — 9jaRentPay{% endblock %}
+{% block page_title %}My Properties{% endblock %}
+{% block page_subtitle %}Manage your listed properties{% endblock %}
+
+{% block dashboard_content %}
+<div class="flex justify-between items-center mb-6">
+  <p class="text-sm text-gray-400">{{ properties.count }} propert{{ properties.count|pluralize:"y,ies" }} listed</p>
+  <a href="{% url 'add_property' %}" class="bg-primary text-white font-bold px-5 py-2.5 rounded-2xl text-sm hover:bg-primary/90 transition shadow-sm">
+    + Add New Property
+  </a>
+</div>
+
+{% if properties %}
+<div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+  {% for prop in properties %}
+  <div class="bg-white rounded-2xl shadow-sm overflow-hidden hover:shadow-md transition">
+    <div class="relative">
+      <img src="{{ prop.display_image }}" alt="{{ prop.title }}" class="w-full h-44 object-cover" loading="lazy" />
+      {% if prop.is_verified %}
+        <span class="absolute top-3 left-3 bg-accent text-white text-xs font-semibold px-2 py-0.5 rounded-full">Verified</span>
+      {% endif %}
+      <span class="absolute top-3 right-3 text-xs font-semibold px-2 py-0.5 rounded-full
+        {% if prop.is_available %}bg-white text-accent shadow{% else %}bg-gray-200 text-gray-500{% endif %}">
+        {% if prop.is_available %}Available{% else %}Rented{% endif %}
+      </span>
+    </div>
+    <div class="p-4">
+      <h4 class="font-bold text-gray-900">{{ prop.title }}</h4>
+      <p class="text-xs text-gray-400 mt-0.5">📍 {{ prop.location }}, {{ prop.city }}</p>
+      <div class="flex items-center gap-3 mt-2 text-xs text-gray-500">
+        <span>🛏 {{ prop.bedrooms }}</span>
+        <span>🚿 {{ prop.bathrooms }}</span>
+        <span class="capitalize">{{ prop.get_property_type_display }}</span>
+      </div>
+      <div class="flex items-center justify-between mt-4">
+        <p class="font-bold text-primary">₦{{ prop.price_per_year|floatformat:0 }}<span class="text-gray-400 font-normal text-xs">/yr</span></p>
+        <a href="{% url 'property_detail' prop.pk %}" class="text-xs bg-primary/10 text-primary font-semibold px-3 py-1.5 rounded-xl hover:bg-primary/20 transition">
+          Manage
+        </a>
+      </div>
+    </div>
+  </div>
+  {% endfor %}
+</div>
+{% else %}
+<div class="flex flex-col items-center justify-center py-20 text-center">
+  <div class="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mb-4">🏠</div>
+  <h3 class="text-lg font-bold text-gray-900 mb-2">No Properties Listed</h3>
+  <p class="text-sm text-gray-400 mb-6 max-w-sm">Add your first property to start receiving applications.</p>
+  <a href="{% url 'add_property' %}" class="bg-primary text-white font-bold px-6 py-3 rounded-2xl text-sm hover:bg-primary/90 transition">Add Property</a>
+</div>
+{% endif %}
+{% endblock %}

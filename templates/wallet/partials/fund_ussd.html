@@ -1,0 +1,83 @@
+{% comment %}Fund Wallet — USSD via Paystack. HTMX partial, targets #fund-modal.{% endcomment %}
+<div class="fixed inset-0 bg-black/40 flex items-end sm:items-center justify-center z-50">
+  <div class="bg-white w-full sm:max-w-md rounded-t-3xl sm:rounded-3xl p-6 shadow-2xl">
+    <!-- Header -->
+    <div class="flex items-center justify-between mb-5">
+      <h2 class="text-lg font-bold text-gray-900">Fund Wallet</h2>
+      <button onclick="document.getElementById('fund-modal').innerHTML=''" class="text-gray-400 hover:text-gray-600 text-xl leading-none">✕</button>
+    </div>
+
+    <!-- Step indicator -->
+    <div class="flex items-center gap-2 mb-6">
+      <div class="w-7 h-7 rounded-full bg-accent text-white text-xs font-bold flex items-center justify-center">✓</div>
+      <div class="flex-1 h-0.5 bg-accent"></div>
+      <div class="w-7 h-7 rounded-full bg-accent text-white text-xs font-bold flex items-center justify-center">✓</div>
+      <div class="flex-1 h-0.5 bg-primary"></div>
+      <div class="w-7 h-7 rounded-full bg-primary text-white text-xs font-bold flex items-center justify-center">3</div>
+    </div>
+
+    <!-- Amount -->
+    <div class="text-center mb-5">
+      <p class="text-sm text-gray-400">Payment amount</p>
+      <p class="text-3xl font-bold text-gray-900">₦{{ amount|floatformat:0 }}</p>
+    </div>
+
+    {% if ussd_code %}
+    <!-- USSD code -->
+    <div class="bg-purple-50 rounded-2xl p-5 mb-4 text-center">
+      <p class="text-xs text-gray-500 uppercase tracking-wide mb-2 font-medium">Dial this code</p>
+      <p class="text-4xl font-bold text-purple-700 tracking-widest mb-3">{{ ussd_code }}</p>
+      <button onclick="navigator.clipboard.writeText('{{ ussd_code }}')"
+        class="text-xs bg-white border border-purple-200 text-purple-600 px-4 py-1.5 rounded-full hover:bg-purple-50 transition">
+        Copy Code
+      </button>
+    </div>
+
+    <div class="bg-gray-50 rounded-xl p-4 mb-4 text-xs text-gray-600 space-y-1">
+      <p>📱 Dial the code above on your phone</p>
+      <p>🔢 Follow the prompts and enter your PIN</p>
+      <p>✅ Your wallet will be credited automatically</p>
+    </div>
+    {% else %}
+    <!-- USSD not available in test mode -->
+    <div class="bg-yellow-50 border border-yellow-200 rounded-2xl p-4 mb-4 text-sm text-yellow-800">
+      <p class="font-semibold mb-1">⚠ USSD code not available</p>
+      <p class="text-xs">USSD requires a live Paystack key and a customer phone number. Please use card payment or bank transfer instead.</p>
+    </div>
+    {% endif %}
+
+    <!-- Countdown -->
+    <div class="flex items-center justify-center gap-2 text-amber-600 font-semibold text-sm mb-3">
+      <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
+      </svg>
+      <span>Session expires in <span id="ussd-countdown"></span></span>
+    </div>
+
+    <div class="flex items-center justify-center gap-2 text-sm text-gray-400 mb-4">
+      <div class="w-3 h-3 rounded-full border-2 border-primary border-t-transparent animate-spin"></div>
+      Waiting for payment…
+    </div>
+
+    <button onclick="document.getElementById('fund-modal').innerHTML=''" class="text-sm text-gray-400 hover:text-gray-600 w-full text-center block">
+      Close (check wallet later)
+    </button>
+  </div>
+</div>
+
+<script>
+(function() {
+  const el = document.getElementById('ussd-countdown');
+  if (!el) return;
+  let secs = parseInt('{{ expires_seconds|default:1800 }}', 10) || 1800;
+  function fmt(s) {
+    return `${String(Math.floor(s / 60)).padStart(2, '0')}:${String(s % 60).padStart(2, '0')}`;
+  }
+  el.textContent = fmt(secs);
+  const t = setInterval(() => {
+    if (secs <= 0) { clearInterval(t); el.textContent = '00:00'; return; }
+    secs--;
+    el.textContent = fmt(secs);
+  }, 1000);
+})();
+</script>

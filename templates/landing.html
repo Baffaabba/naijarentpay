@@ -1,0 +1,82 @@
+{% extends 'base.html' %}
+{% block title %}9jaRentPay — Rent smarter. Save better.{% endblock %}
+{% block content %}
+<!-- Nav -->
+<nav class="bg-primary text-white px-8 py-4 flex items-center justify-between">
+  <div class="flex items-center gap-2">
+    <div class="w-8 h-8 rounded-lg bg-accent flex items-center justify-center font-bold text-sm">9R</div>
+    <span class="font-bold text-lg">9jaRentPay</span>
+  </div>
+  <div class="flex items-center gap-4">
+    <a href="{% url 'login' %}" class="text-white/80 hover:text-white text-sm font-medium">Login</a>
+    <a href="{% url 'register_step1' %}" class="bg-accent hover:bg-emerald-600 text-white px-4 py-2 rounded-lg text-sm font-semibold transition">Get Started</a>
+  </div>
+</nav>
+
+<!-- Hero -->
+<section class="bg-primary text-white py-24 px-8">
+  <div class="max-w-4xl mx-auto text-center">
+    <span class="inline-block bg-accent/20 text-accent px-3 py-1 rounded-full text-sm font-medium mb-6">Nigeria's Smart Rent Platform</span>
+    <h1 class="text-5xl font-extrabold leading-tight mb-6">Rent smarter.<br/>Save better.</h1>
+    <p class="text-xl text-white/70 mb-10 max-w-2xl mx-auto">Pay rent in instalments, save automatically towards your next payment, and find your perfect home — all in one place.</p>
+    <div class="flex gap-4 justify-center flex-wrap">
+      <a href="{% url 'register_step1' %}" class="bg-accent hover:bg-emerald-600 text-white px-8 py-4 rounded-xl font-bold text-lg transition shadow-lg">Start for Free</a>
+      <a href="{% url 'public_homes' %}" class="bg-white/10 hover:bg-white/20 text-white px-8 py-4 rounded-xl font-bold text-lg transition">Browse Homes</a>
+    </div>
+  </div>
+</section>
+
+<!-- Features -->
+<section class="py-20 px-8 bg-white">
+  <div class="max-w-5xl mx-auto">
+    <h2 class="text-3xl font-bold text-center text-gray-900 mb-14">Everything you need to rent in Nigeria</h2>
+    <div class="grid md:grid-cols-3 gap-8">
+      <div class="p-6 rounded-2xl border border-gray-100 shadow-sm">
+        <div class="w-12 h-12 bg-accent/10 rounded-xl flex items-center justify-center text-2xl mb-4">💰</div>
+        <h3 class="font-bold text-lg mb-2">Savings Wallet</h3>
+        <p class="text-gray-500 text-sm">Automatically save towards your rent deadline. Set goals, track progress, and never miss a payment.</p>
+      </div>
+      <div class="p-6 rounded-2xl border border-gray-100 shadow-sm">
+        <div class="w-12 h-12 bg-primary/10 rounded-xl flex items-center justify-center text-2xl mb-4">🏠</div>
+        <h3 class="font-bold text-lg mb-2">Smart Search</h3>
+        <p class="text-gray-500 text-sm">Find verified properties across Lagos, Abuja, and Port Harcourt. Filter by type, price, and location.</p>
+      </div>
+      <div class="p-6 rounded-2xl border border-gray-100 shadow-sm">
+        <div class="w-12 h-12 bg-warning/10 rounded-xl flex items-center justify-center text-2xl mb-4">📋</div>
+        <h3 class="font-bold text-lg mb-2">Digital Leases</h3>
+        <p class="text-gray-500 text-sm">Sign and manage your lease online. Get reminders, track due dates, and download documents anytime.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Stats -->
+<section class="py-16 px-8 bg-gray-50">
+  <div class="max-w-4xl mx-auto grid grid-cols-3 gap-8 text-center">
+    <div>
+      <p class="text-4xl font-extrabold text-primary">5,000+</p>
+      <p class="text-gray-500 mt-1">Verified Properties</p>
+    </div>
+    <div>
+      <p class="text-4xl font-extrabold text-accent">₦2.1B+</p>
+      <p class="text-gray-500 mt-1">Rent Processed</p>
+    </div>
+    <div>
+      <p class="text-4xl font-extrabold text-primary">12,000+</p>
+      <p class="text-gray-500 mt-1">Happy Tenants</p>
+    </div>
+  </div>
+</section>
+
+<!-- CTA -->
+<section class="py-20 px-8 bg-primary text-white text-center">
+  <h2 class="text-3xl font-bold mb-4">Ready to find your next home?</h2>
+  <p class="text-white/70 mb-8">Join thousands of Nigerians who pay rent the smart way.</p>
+  <a href="{% url 'register_step1' %}" class="bg-accent hover:bg-emerald-600 text-white px-8 py-4 rounded-xl font-bold text-lg transition">Create Free Account</a>
+</section>
+
+<!-- Footer -->
+<footer class="bg-gray-900 text-white/50 py-8 px-8 text-center text-sm">
+  <p>&copy; 2026 9jaRentPay. All rights reserved.</p>
+</footer>
+{% endblock %}

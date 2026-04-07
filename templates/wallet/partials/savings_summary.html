@@ -1,0 +1,28 @@
+{% comment %}Partial: savings goals list + current balance. HTMX swap target #savings-summary.{% endcomment %}
+{% if goals %}
+  {% for goal in goals %}
+  <div class="mb-5 last:mb-0">
+    <div class="flex items-center justify-between mb-2">
+      <p class="text-sm font-semibold text-gray-900">{{ goal.goal_name }}</p>
+      <div class="flex items-center gap-2">
+        <span class="text-xs text-gray-400">{{ goal.days_remaining }} days left</span>
+        {% if goal.auto_save %}
+          <span class="bg-accent/10 text-accent text-xs font-medium px-2 py-0.5 rounded-full">Auto</span>
+        {% endif %}
+      </div>
+    </div>
+    <div class="w-full bg-gray-100 rounded-full h-2 mb-1">
+      <div class="bg-accent h-2 rounded-full transition-all progress-bar" data-pct="{{ goal.percentage_saved }}"></div>
+    </div>
+    <div class="flex justify-between text-xs text-gray-400">
+      <span>₦{{ goal.saved_amount|floatformat:0 }} / ₦{{ goal.target_amount|floatformat:0 }}</span>
+      <span>{{ goal.percentage_saved }}%</span>
+    </div>
+    {% if goal.due_date %}
+      <p class="text-xs text-warning mt-1">Due: {{ goal.due_date|date:"d M Y" }}</p>
+    {% endif %}
+  </div>
+  {% endfor %}
+{% else %}
+  <p class="text-sm text-gray-400 text-center py-4">No savings goals yet.</p>
+{% endif %}

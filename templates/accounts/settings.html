@@ -1,0 +1,315 @@
+{% extends 'base_dashboard.html' %}
+{% block title %}Settings — 9jaRentPay{% endblock %}
+{% block page_title %}Settings{% endblock %}
+{% block page_subtitle %}Manage your account preferences{% endblock %}
+
+{% block dashboard_content %}
+<div class="grid grid-cols-3 gap-6">
+
+  <!-- Profile sidebar -->
+  <div class="space-y-5">
+    <div class="bg-white rounded-2xl p-6 shadow-sm text-center">
+      <!-- Avatar circle with initials -->
+      <div class="w-20 h-20 rounded-full bg-primary text-white flex items-center justify-center text-2xl font-bold mx-auto mb-3">
+        {% if request.user.avatar %}
+          <img src="{{ request.user.avatar.url }}" alt="Avatar" class="w-20 h-20 rounded-full object-cover" />
+        {% else %}
+          {{ request.user.initials }}
+        {% endif %}
+      </div>
+      <p class="font-bold text-gray-900 text-lg">{{ request.user.get_full_name }}</p>
+      <p class="text-sm text-gray-400 mt-0.5">{{ request.user.email }}</p>
+      <div class="flex flex-wrap justify-center gap-2 mt-3">
+        {% if request.user.is_kyc_verified %}
+          <span class="bg-accent/10 text-accent text-xs font-semibold px-3 py-1 rounded-full">✓ KYC Verified</span>
+        {% endif %}
+        <span class="text-xs font-semibold px-3 py-1 rounded-full {{ request.user.tier_color }}">
+          {{ request.user.tier_badge_emoji }} {{ request.user.tier_label }} Member
+        </span>
+      </div>
+    </div>
+
+    <!-- Tab navigation -->
+    <div class="bg-white rounded-2xl p-2 shadow-sm">
+      <nav class="space-y-1">
+        <button onclick="showTab('profile')" id="tab-profile" class="settings-tab active w-full flex items-center gap-3 px-4 py-2.5 rounded-xl text-sm font-medium text-left transition">
+          👤 Profile
+        </button>
+        <button onclick="showTab('notifications')" id="tab-notifications" class="settings-tab w-full flex items-center gap-3 px-4 py-2.5 rounded-xl text-sm font-medium text-left transition">
+          🔔 Notifications
+        </button>
+        <button onclick="showTab('security')" id="tab-security" class="settings-tab w-full flex items-center gap-3 px-4 py-2.5 rounded-xl text-sm font-medium text-left transition">
+          🔒 Security
+        </button>
+        <button onclick="showTab('payment')" id="tab-payment" class="settings-tab w-full flex items-center gap-3 px-4 py-2.5 rounded-xl text-sm font-medium text-left transition">
+          💳 Payment Details
+        </button>
+        <button onclick="showTab('membership')" id="tab-membership" class="settings-tab w-full flex items-center gap-3 px-4 py-2.5 rounded-xl text-sm font-medium text-left transition">
+          🏅 Membership
+        </button>
+      </nav>
+    </div>
+  </div>
+
+  <!-- Content area -->
+  <div class="col-span-2">
+
+    <!-- Profile Tab -->
+    <div id="panel-profile" class="settings-panel bg-white rounded-2xl p-6 shadow-sm">
+      <h3 class="font-bold text-gray-900 mb-5">Profile Information</h3>
+      <form method="post" action="{% if request.user.is_tenant %}{% url 'tenant_settings' %}{% else %}{% url 'landlord_settings' %}{% endif %}" enctype="multipart/form-data">
+        {% csrf_token %}
+        <div class="grid grid-cols-2 gap-4">
+          <div>
+            <label for="s_first_name" class="block text-xs font-medium text-gray-500 mb-1">First Name</label>
+            <input id="s_first_name" type="text" name="first_name" placeholder="First name" value="{{ request.user.first_name }}"
+              class="w-full border border-gray-200 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-primary/30"/>
+          </div>
+          <div>
+            <label for="s_last_name" class="block text-xs font-medium text-gray-500 mb-1">Last Name</label>
+            <input id="s_last_name" type="text" name="last_name" placeholder="Last name" value="{{ request.user.last_name }}"
+              class="w-full border border-gray-200 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-primary/30"/>
+          </div>
+          <div class="col-span-2">
+            <label for="s_email" class="block text-xs font-medium text-gray-500 mb-1">Email Address</label>
+            <input id="s_email" type="email" name="email" placeholder="you@example.com" value="{{ request.user.email }}"
+              class="w-full border border-gray-200 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-primary/30"/>
+          </div>
+          <div>
+            <label for="s_phone" class="block text-xs font-medium text-gray-500 mb-1">Phone Number</label>
+            <input id="s_phone" type="text" name="phone" placeholder="e.g. 08012345678" value="{{ request.user.phone|default:'' }}"
+              class="w-full border border-gray-200 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-primary/30"/>
+          </div>
+          <div>
+            <label for="s_address" class="block text-xs font-medium text-gray-500 mb-1">Address</label>
+            <input id="s_address" type="text" name="address" placeholder="Your address" value="{{ request.user.address|default:'' }}"
+              class="w-full border border-gray-200 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-primary/30"/>
+          </div>
+          <div class="col-span-2">
+            <label for="s_avatar" class="block text-xs font-medium text-gray-500 mb-1">Profile Picture</label>
+            <input id="s_avatar" type="file" name="avatar" aria-label="Upload profile picture" accept="image/*"
+              class="w-full border border-gray-200 rounded-xl px-4 py-2.5 text-sm"/>
+          </div>
+        </div>
+        <div class="mt-5">
+          <button type="submit" class="bg-primary text-white font-bold px-6 py-2.5 rounded-xl text-sm hover:bg-primary/90 transition">
+            Save Changes
+          </button>
+        </div>
+      </form>
+    </div>
+
+    <!-- Notifications Tab -->
+    <div id="panel-notifications" class="settings-panel hidden bg-white rounded-2xl p-6 shadow-sm">
+      <h3 class="font-bold text-gray-900 mb-5">Notification Preferences</h3>
+      <div class="space-y-4">
+        {% for label in notification_labels %}
+        <div class="flex items-center justify-between py-3 border-b border-gray-50 last:border-0">
+          <div>
+            <p class="text-sm font-medium text-gray-900">{{ label }}</p>
+            <p class="text-xs text-gray-400 mt-0.5">Receive email + push notifications</p>
+          </div>
+          <label class="relative inline-flex items-center cursor-pointer">
+            <input type="checkbox" checked aria-label="{{ label }}" class="sr-only peer" />
+            <div class="w-11 h-6 bg-gray-200 rounded-full peer peer-checked:bg-accent transition"></div>
+            <div class="absolute left-0.5 top-0.5 w-5 h-5 bg-white rounded-full shadow peer-checked:translate-x-5 transition transform"></div>
+          </label>
+        </div>
+      {% endfor %}
+      </div>
+    </div>
+
+    <!-- Security Tab -->
+    <div id="panel-security" class="settings-panel hidden bg-white rounded-2xl p-6 shadow-sm">
+      <h3 class="font-bold text-gray-900 mb-5">Security Settings</h3>
+      <form method="post" action="{% if request.user.is_tenant %}{% url 'tenant_settings' %}{% else %}{% url 'landlord_settings' %}{% endif %}">
+        {% csrf_token %}
+        <input type="hidden" name="form_type" value="security" />
+        <div class="space-y-4">
+          <div>
+            <label for="s_cur_pw" class="block text-xs font-medium text-gray-500 mb-1">Current Password</label>
+            <input id="s_cur_pw" type="password" name="current_password" placeholder="Current password"
+              class="w-full border border-gray-200 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-primary/30"/>
+          </div>
+          <div>
+            <label for="s_new_pw1" class="block text-xs font-medium text-gray-500 mb-1">New Password</label>
+            <input id="s_new_pw1" type="password" name="new_password" placeholder="New password"
+              class="w-full border border-gray-200 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-primary/30"/>
+          </div>
+          <div>
+            <label for="s_new_pw2" class="block text-xs font-medium text-gray-500 mb-1">Confirm New Password</label>
+            <input id="s_new_pw2" type="password" name="confirm_new_password" placeholder="Repeat new password"
+              class="w-full border border-gray-200 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-primary/30"/>
+          </div>
+        </div>
+        <button type="submit" class="mt-5 bg-primary text-white font-bold px-6 py-2.5 rounded-xl text-sm hover:bg-primary/90 transition">
+          Update Password
+        </button>
+      </form>
+    </div>
+
+    <!-- Payment Details Tab -->
+    <div id="panel-payment" class="settings-panel hidden bg-white rounded-2xl p-6 shadow-sm">
+      <h3 class="font-bold text-gray-900 mb-5">Payment Details</h3>
+
+      <!-- Saved cards list — HTMX-swappable -->
+      {% include "wallet/partials/saved_cards.html" with cards=saved_cards %}
+
+      <!-- Add new card via Paystack tokenisation -->
+      <div class="mt-5">
+        <button id="add-card-btn"
+          onclick="addNewCard()"
+          class="bg-primary text-white font-semibold px-5 py-2.5 rounded-xl text-sm hover:bg-primary/90 transition flex items-center gap-2">
+          <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
+          </svg>
+          Add New Card
+        </button>
+        <p class="text-xs text-gray-400 mt-2">A small refundable charge (₦50) is used to verify and save your card securely with Paystack.</p>
+      </div>
+    </div>
+
+    <!-- Membership Tab -->
+    <div id="panel-membership" class="settings-panel hidden bg-white rounded-2xl p-6 shadow-sm">
+      <h3 class="font-bold text-gray-900 mb-1">Membership Tier</h3>
+      <p class="text-sm text-gray-400 mb-6">Your tier is automatically upgraded based on account verification.</p>
+
+      <!-- Tier cards -->
+      <div class="space-y-4">
+
+        <!-- Free -->
+        <div class="rounded-2xl border-2 p-5 {% if request.user.membership_tier == 'free' %}border-gray-300 bg-gray-50{% else %}border-gray-100{% endif %}">
+          <div class="flex items-center justify-between mb-2">
+            <div class="flex items-center gap-2">
+              <span class="text-xl">⬜</span>
+              <span class="font-bold text-gray-800">Free</span>
+            </div>
+            {% if request.user.membership_tier == 'free' %}<span class="text-xs bg-gray-200 text-gray-700 font-semibold px-2 py-0.5 rounded-full">Current</span>{% endif %}
+          </div>
+          <ul class="text-xs text-gray-500 space-y-1 mt-2">
+            <li>✓ Browse and search properties</li>
+            <li>✓ Apply for up to 3 properties</li>
+            <li>✓ Basic wallet access</li>
+          </ul>
+        </div>
+
+        <!-- Standard -->
+        <div class="rounded-2xl border-2 p-5 {% if request.user.membership_tier == 'standard' %}border-blue-400 bg-blue-50{% else %}border-gray-100{% endif %}">
+          <div class="flex items-center justify-between mb-2">
+            <div class="flex items-center gap-2">
+              <span class="text-xl">🔵</span>
+              <span class="font-bold text-gray-800">Standard</span>
+            </div>
+            {% if request.user.membership_tier == 'standard' %}<span class="text-xs bg-blue-200 text-blue-700 font-semibold px-2 py-0.5 rounded-full">Current</span>{% endif %}
+          </div>
+          <ul class="text-xs text-gray-500 space-y-1 mt-2">
+            <li>✓ Everything in Free</li>
+            <li>✓ Unlimited applications</li>
+            <li>✓ Messaging with landlords</li>
+            <li>✓ Savings goals & wallet transfers</li>
+          </ul>
+          {% if request.user.membership_tier == 'free' %}
+          <div class="mt-3 text-xs text-blue-700 bg-blue-50 rounded-xl px-3 py-2">
+            <strong>How to upgrade:</strong> Add your phone number in Profile settings.
+          </div>
+          {% endif %}
+        </div>
+
+        <!-- Premium -->
+        <div class="rounded-2xl border-2 p-5 {% if request.user.membership_tier == 'premium' %}border-amber-400 bg-amber-50{% else %}border-gray-100{% endif %}">
+          <div class="flex items-center justify-between mb-2">
+            <div class="flex items-center gap-2">
+              <span class="text-xl">⭐</span>
+              <span class="font-bold text-gray-800">Premium</span>
+            </div>
+            {% if request.user.membership_tier == 'premium' %}<span class="text-xs bg-amber-200 text-amber-700 font-semibold px-2 py-0.5 rounded-full">Current</span>{% endif %}
+          </div>
+          <ul class="text-xs text-gray-500 space-y-1 mt-2">
+            <li>✓ Everything in Standard</li>
+            <li>✓ Verified badge on profile</li>
+            <li>✓ Priority application ranking</li>
+            <li>✓ Access to premium listings</li>
+            <li>✓ Dedicated support</li>
+          </ul>
+          {% if request.user.membership_tier != 'premium' %}
+          <div class="mt-3 text-xs text-amber-700 bg-amber-50 rounded-xl px-3 py-2">
+            <strong>How to upgrade:</strong> Upload a valid government ID below and our team will verify it within 24 hours.
+          </div>
+          <form method="post" action="{% if request.user.is_tenant %}{% url 'tenant_settings' %}{% else %}{% url 'landlord_settings' %}{% endif %}" enctype="multipart/form-data" class="mt-3">
+            {% csrf_token %}
+            <input type="hidden" name="form_type" value="kyc" />
+            <label for="s_id_document" class="block text-xs font-medium text-gray-600 mb-1">Upload Government ID (NIN slip, Passport, Driver's License)</label>
+            <input id="s_id_document" type="file" name="id_document" accept=".pdf,.jpg,.jpeg,.png" class="w-full border border-amber-200 rounded-xl px-3 py-2 text-sm mb-2" />
+            <button type="submit" class="w-full bg-amber-500 text-white font-bold py-2.5 rounded-xl text-sm hover:bg-amber-600 transition">
+              Submit for KYC Verification
+            </button>
+          </form>
+          {% endif %}
+        </div>
+
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<style>
+.settings-tab.active { background: rgb(var(--color-primary) / 0.1); color: rgb(var(--color-primary)); font-weight: 600; }
+.settings-tab:not(.active) { color: #6B7280; }
+.settings-tab:not(.active):hover { background: #F9FAFB; }
+</style>
+
+<script>
+function showTab(name) {
+  document.querySelectorAll('.settings-panel').forEach(p => p.classList.add('hidden'));
+  document.querySelectorAll('.settings-tab').forEach(t => t.classList.remove('active'));
+  document.getElementById('panel-' + name).classList.remove('hidden');
+  document.getElementById('tab-' + name).classList.add('active');
+}
+// Restore active tab on page load (for post-submit redirects)
+const activeTab = '{{ active_tab|default:"profile" }}';
+if (activeTab && activeTab !== 'profile') showTab(activeTab === 'kyc' ? 'membership' : activeTab);
+</script>
+
+<!-- Paystack card tokenisation -->
+<script src="https://js.paystack.co/v1/inline.js"></script>
+<script>
+function addNewCard() {
+  const btn = document.getElementById('add-card-btn');
+  btn.disabled = true;
+  btn.textContent = 'Opening…';
+
+  const handler = PaystackPop.setup({
+    key: '{{ PAYSTACK_PUBLIC_KEY|default:"" }}',
+    email: '{{ request.user.email }}',
+    amount: 5000,   // ₦50 in kobo — refundable tokenisation charge
+    currency: 'NGN',
+    label: 'Save Card',
+    channels: ['card'],
+    metadata: { action: 'save_card' },
+    callback: function(response) {
+      // Send reference to backend for verification + card save
+      const form = new FormData();
+      form.append('reference', response.reference);
+      fetch('{% url "save_card" %}', {
+        method: 'POST',
+        headers: { 'X-CSRFToken': (document.cookie.match(/csrftoken=([^;]+)/) || [])[1] || '' },
+        body: form,
+      })
+      .then(r => r.text())
+      .then(html => {
+        document.getElementById('saved-cards-list').outerHTML = html;
+        btn.disabled = false;
+        btn.innerHTML = '<svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg> Add New Card';
+      })
+      .catch(() => { btn.disabled = false; btn.textContent = 'Add New Card'; });
+    },
+    onClose: function() {
+      btn.disabled = false;
+      btn.innerHTML = '<svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg> Add New Card';
+    },
+  });
+  handler.openIframe();
+}
+</script>
+{% endblock %}

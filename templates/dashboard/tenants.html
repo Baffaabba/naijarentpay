@@ -1,0 +1,48 @@
+{% extends 'base_dashboard.html' %}
+{% block title %}Tenants — 9jaRentPay{% endblock %}
+{% block page_title %}My Tenants{% endblock %}
+{% block page_subtitle %}Active tenants on your properties{% endblock %}
+
+{% block dashboard_content %}
+{% if leases %}
+<div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
+  {% for lease in leases %}
+  <div class="bg-white rounded-2xl p-5 shadow-sm">
+    <div class="flex items-center gap-3 mb-4">
+      <div class="w-12 h-12 rounded-full bg-primary text-white flex items-center justify-center font-bold text-lg flex-shrink-0">
+        {{ lease.tenant.initials }}
+      </div>
+      <div class="min-w-0">
+        <p class="font-bold text-gray-900 truncate">{{ lease.tenant.get_full_name }}</p>
+        <p class="text-xs text-gray-400 truncate">{{ lease.tenant.email }}</p>
+      </div>
+    </div>
+    <div class="bg-gray-50 rounded-xl p-3 mb-3">
+      <p class="text-sm font-semibold text-gray-900 truncate">{{ lease.rental_property.title }}</p>
+      <p class="text-xs text-gray-400 mt-0.5">{{ lease.rental_property.location }}, {{ lease.rental_property.city }}</p>
+    </div>
+    <div class="flex justify-between text-xs text-gray-400 mb-2">
+      <span>{{ lease.start_date|date:"d M Y" }}</span>
+      <span>→ {{ lease.end_date|date:"d M Y" }}</span>
+    </div>
+    <div class="flex items-center justify-between">
+      <p class="text-sm font-bold text-primary">₦{{ lease.rent_amount|floatformat:0 }}/yr</p>
+      <span class="text-xs font-semibold px-2 py-1 rounded-full
+        {% if lease.is_active %}bg-accent/10 text-accent{% else %}bg-gray-100 text-gray-400{% endif %}">
+        {% if lease.is_active %}Active{% else %}Ended{% endif %}
+      </span>
+    </div>
+    <div class="mt-2 text-xs text-warning">
+      Next rent: {{ lease.next_rent_due|date:"d M Y" }}
+    </div>
+  </div>
+  {% endfor %}
+</div>
+{% else %}
+<div class="flex flex-col items-center justify-center py-20 text-center">
+  <div class="text-4xl mb-4">👤</div>
+  <h3 class="text-lg font-bold text-gray-900 mb-2">No Tenants Yet</h3>
+  <p class="text-sm text-gray-400">Approved applications automatically create tenancies.</p>
+</div>
+{% endif %}
+{% endblock %}

@@ -1,0 +1,52 @@
+{% comment %}Partial: single application card for landlord view.
+Use: {% include 'partials/application_card.html' with app=application %}{% endcomment %}
+{% load humanize %}
+<div class="app-card bg-white rounded-2xl p-5 shadow-sm border border-gray-100 transition" id="app-{{ app.pk }}">
+  <div class="flex items-start justify-between">
+    <div class="flex items-center gap-3">
+      <div class="w-10 h-10 rounded-full bg-primary text-white flex items-center justify-center font-bold text-sm">
+        {{ app.tenant.initials }}
+      </div>
+      <div>
+        <p class="font-semibold text-gray-900">{{ app.tenant.get_full_name }}</p>
+        <p class="text-xs text-gray-400">{{ app.rental_property.title }}</p>
+        <p class="text-xs text-gray-300 mt-0.5">{{ app.applied_date|date:"d M Y" }}</p>
+      </div>
+    </div>
+    <div class="flex flex-col items-end gap-2">
+      {% if app.status == 'pending' %}
+        <span class="bg-yellow-50 text-yellow-600 text-xs font-semibold px-3 py-1 rounded-full">Pending</span>
+      {% elif app.status == 'approved' %}
+        <span class="bg-accent/10 text-accent text-xs font-semibold px-3 py-1 rounded-full">Approved</span>
+      {% else %}
+        <span class="bg-red-50 text-red-500 text-xs font-semibold px-3 py-1 rounded-full">Rejected</span>
+      {% endif %}
+    </div>
+  </div>
+  <div class="flex items-center gap-3 mt-3">
+    {% if app.employment_type %}
+      <span class="text-xs bg-blue-50 text-blue-600 px-2 py-0.5 rounded-full">{{ app.get_employment_type_display }}</span>
+    {% endif %}
+    {% if app.monthly_income %}
+      <span class="text-xs bg-gray-100 text-gray-600 px-2 py-0.5 rounded-full">₦{{ app.monthly_income|intcomma }}/mo</span>
+    {% endif %}
+  </div>
+  {% if app.status == 'pending' %}
+  <div class="flex gap-3 mt-4">
+    <button
+      hx-post="{% url 'approve_application' app.pk %}"
+      hx-target="#app-{{ app.pk }}"
+      hx-swap="outerHTML"
+      class="flex-1 bg-accent text-white text-sm font-semibold py-2 rounded-xl hover:bg-accent/90 transition">
+      Approve
+    </button>
+    <button
+      hx-post="{% url 'reject_application' app.pk %}"
+      hx-target="#app-{{ app.pk }}"
+      hx-swap="outerHTML"
+      class="flex-1 bg-red-50 text-red-500 text-sm font-semibold py-2 rounded-xl hover:bg-red-100 transition">
+      Reject
+    </button>
+  </div>
+  {% endif %}
+</div>
